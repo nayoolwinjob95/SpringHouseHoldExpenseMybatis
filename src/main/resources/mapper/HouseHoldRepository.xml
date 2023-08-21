@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="co.jp.kadai.repository.HouseHoldRepository">
+
+	<resultMap id="houseHoldResultMap" type="co.jp.kadai.entity.HouseHold">
+		<result column="id" property="id" />
+		<result column="item" property="item" />
+		<result column="price" property="price" />
+		<result column="date" property="date" />
+	</resultMap>
+	
+	<resultMap id="houseHoldListDtoResultMap" type="co.jp.kadai.dto.HouseHoldListDto">
+		<result column="year" property="year" />
+		<result column="month" property="month" />
+		<result column="total" property="total" />
+	</resultMap>
+	
+	<select id="getById" resultMap="houseHoldResultMap">
+		SELECT id, item, price, date
+		FROM household
+		WHERE id = #{id}
+	</select>
+	
+	<select id="findAllByYearMonth" resultMap="houseHoldListDtoResultMap">
+		SELECT 
+			DATE_PART('YEAR', h.date) AS year,
+			DATE_PART('MONTH', h.date) AS month,
+			SUM(h.price) AS total
+		FROM household h
+		GROUP BY year, month
+		ORDER BY year, month DESC
+	</select>
+	
+	<select id="getDetails" resultMap="houseHoldResultMap">
+		SELECT id, item, price, date
+		FROM household h
+		WHERE DATE_PART('YEAR', h.date) = #{year}
+		AND DATE_PART('MONTH', h.date) = #{month}
+	</select>
+	
+	<select id="getDetailTotal" resultType="int">
+		SELECT SUM(h.price)
+		FROM household h
+		WHERE DATE_PART('YEAR', h.date) = #{year}
+		AND DATE_PART('MONTH', h.date) = #{month}
+	</select>
+	
+	<insert id="saveHouseHold">
+		INSERT INTO household (item, price, date)
+		VALUES (#{item}, #{price}, #{date})
+	</insert>
+	
+	<update id="updateHouseHold">
+		UPDATE household 
+		SET 
+			item = #{item},
+			price = #{price},
+			date = #{date}
+		WHERE id = #{id}
+	</update>
+
+</mapper>
